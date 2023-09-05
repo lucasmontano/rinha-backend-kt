@@ -1,0 +1,43 @@
+version: '1'
+services:
+  lb:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "9090:9090"
+    depends_on:
+      - service1
+      - service2
+  service1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - KTOR_DATABASE_URL=jdbc:postgresql://db:5432/rinhadb
+      - KTOR_DATABASE_USER=user
+      - KTOR_DATABASE_PASSWORD=password
+    depends_on:
+      - db
+    ports:
+      - "8181:8080"
+  service2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - KTOR_DATABASE_URL=jdbc:postgresql://db:5432/rinhadb
+      - KTOR_DATABASE_USER=user
+      - KTOR_DATABASE_PASSWORD=password
+    depends_on:
+      - db
+    ports:
+      - "8282:8080"
+  db:
+    image: postgres:latest
+    volumes:
+      - ./db-init-scripts:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_DB: rinhadb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
